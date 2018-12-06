@@ -1,67 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
+using WebApiInMemoryDemo.DAL;
 
 namespace WebApiInMemoryDemo.Models
 {
     public interface IUrlRepository
     {
-        IQueryable<Url> GetAll();
-        Url Get(int id);
-        Url Add(Url url);
-        Url Remove(int id);
+        Task<Url> Add(Url url);
+        Task<Url> Get(int id);
+        IEnumerable<Url> GetAll();
+        Task<Url> Remove(int id);
     }
     public class UrlRepository : IUrlRepository
     {
-        private List<Url> urls = new List<Url>();
-        private int nextId = 1;
+        private readonly DefaultContext _db;
+
         public UrlRepository()
         {
-            this.Add(new Url()
-            {
-                UrlId = 1,
-                Address = "https://google.com",
-                Description = "Eso es el primer url"
-            });
-
-            this.Add(new Url()
-            {
-                UrlId = 2,
-                Address = "https://twitter.com",
-                Description = "Eso es el segundo url"
-            });
-
-            this.Add(new Url()
-            {
-                UrlId = 3,
-                Address = "https://apple.com",
-                Description = "Eso es el tercer url"
-            });
+            _db = new DefaultContext();    
         }
 
-        public Url Add(Url url)
+        public async Task<Url> Add(Url url)
         {
-            url.UrlId = nextId++;
-            this.urls.Add(url);
+            _db.Urls.Add(url);
+            await _db.SaveChangesAsync();
             return url;
         }
 
-        public Url Get(int id)
+        public async Task<Url> Get(int id)
         {
-            return this.urls.Find(u => u.UrlId == id);
+            var url = _db.Urls.FirstOrDefault(u => u.UrlId == id);
+            return url;
+            
         }
 
-        public IQueryable<Url> GetAll()
+        public IEnumerable<Url> GetAll()
         {
-            return this.urls.AsQueryable();
+            return _db.Urls;
         }
 
-        public Url Remove(int id)
+        public async Task<Url> Remove(int id)
         {
-            Url removeMe = this.urls.Find(u => u.UrlId == id);
-            this.urls.Remove(removeMe);
-            return removeMe;
+            Url toRemove = _db.Urls.FirstOrDefault<Url>(u => u.UrlId == id);
+            _db.Urls.Remove(toRemove);
+            await _db.SaveChangesAsync();
+            return toRemove;
         }
     }
 }

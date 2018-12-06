@@ -9,7 +9,6 @@ namespace WebApiInMemoryDemo.Models
     {
         public int UrlId { get; set; }
         public string Address { get; set; }
-        public string Title { get; set; }
         public string Description { get; set; }
     }
 }

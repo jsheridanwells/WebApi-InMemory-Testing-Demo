@@ -14,25 +14,29 @@ namespace WebApiInMemoryDemo.Controllers
         private readonly IUrlRepository _repo = new UrlRepository();
 
         [WebApiOutputCache(60)]
-        public IQueryable<Url> Get()
+        public IHttpActionResult Get()
         {
-            return _repo.GetAll();
+            var urls = _repo.GetAll();
+            return Ok(urls);
         }
 
-        public Url Get(int id)
+        public IHttpActionResult Get(int id)
         {
-            return _repo.Get(id);
+            var url = _repo.Get(id);
+            return Ok(url.Result);
         }
 
-        [HttpPost]
-        public Url Add([FromBody] Url url)
+        [HttpPost]        
+        public IHttpActionResult Add([FromBody] Url url)
         {
-            return _repo.Add(url);
+            _repo.Add(url);
+            return Created(Request.RequestUri, url);
         }
 
-        public Url Delete(int id)
+        public IHttpActionResult Delete(int id)
         {
-            return _repo.Remove(id);
+            _repo.Remove(id);
+            return Ok();
         }
     }
 }
