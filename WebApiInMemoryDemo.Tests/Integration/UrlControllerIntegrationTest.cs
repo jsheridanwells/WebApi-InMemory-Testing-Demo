@@ -5,6 +5,7 @@ using System.Web.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WebApiInMemoryDemo.Handlers;
 using Newtonsoft.Json;
+using WebApiInMemoryDemo.Tests.Helpers;
 
 namespace WebApiInMemoryDemo.Tests.Integration
 {
@@ -12,6 +13,8 @@ namespace WebApiInMemoryDemo.Tests.Integration
     public class UrlControllerIntegrationTest
     {
         private HttpServer _server;
+        private readonly IntegrationTestHelper _helpers;
+        private readonly IntegrationTextFixtures _fixtures;
         private readonly string _url = "http://localhost:56564/";
 
         public UrlControllerIntegrationTest()
@@ -23,14 +26,16 @@ namespace WebApiInMemoryDemo.Tests.Integration
             config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
             config.MessageHandlers.Add(new WebApiKeyHandler());
             _server = new HttpServer(config);
+            _helpers = new IntegrationTestHelper();
+            _fixtures = new IntegrationTextFixtures();
         }
 
         [TestMethod]
         public void Get()
         {
             var client = new HttpClient(_server);
-            var request = createRequest("api/url?apikey=test", "application/json", HttpMethod.Get);
-            string expectedResponse = "[{\"UrlId\":1,\"Address\":\"https://google.com\",\"Title\":null,\"Description\":\"Eso es el primer url\"},{\"UrlId\":2,\"Address\":\"https://twitter.com\",\"Title\":null,\"Description\":\"Eso es el segundo url\"},{\"UrlId\":3,\"Address\":\"https://apple.com\",\"Title\":null,\"Description\":\"Eso es el tercer url\"}]";
+            var request = _helpers.CreateRequest(_url, "api/url?apikey=test", "application/json", HttpMethod.Get);
+            string expectedResponse = _fixtures.Urls_GetAll_ExpectedResponse();
 
 
             using (HttpResponseMessage response = client.SendAsync(request).Result)
@@ -43,14 +48,7 @@ namespace WebApiInMemoryDemo.Tests.Integration
             
         }
 
-        private HttpRequestMessage createRequest(string url, string mthv, HttpMethod method)
-        {
-            HttpRequestMessage request = new HttpRequestMessage();
-            request.RequestUri = new Uri(_url + url);
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(mthv));
-            request.Method = method;
-            return request;
-        }
+        
 
         public void Dispose()
         {
